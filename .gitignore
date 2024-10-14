@@ -1,0 +1,65 @@
+# Node modules
+node_modules/
+.pnp/
+.pnp.js
+
+# Vite build files
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Vite cache
+.vite
+.cache/
+
+# .env environment variable files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TailwindCSS cache
+.tailwind/
+
+# Coverage directory used by testing frameworks
+coverage/
+
+# Optional npm cache directory
+.npm/
+
+# ESLint cache
+.eslintcache
+
+# React specific
+build/
+.DS_Store
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# macOS
+*.DS_Store
+node_modules
+react-js-blog-website-98b73-firebase-adminsdk-gn41n-25bba9d1a4.json

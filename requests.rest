@@ -1,0 +1,75 @@
+# POST http://localhost:3000/signin 
+# Content-Type: application/json
+
+
+# {
+    
+#     "email": "mahadihasansiam200@outline.com",
+#     "password": "Asdvfs553"
+    
+# }
+
+# GET http://localhost:3000/get-upload-url 
+
+
+# {
+    
+#     "email": "mahadihasansiam200@outline.com",
+#     "password": "Asdvfs553"
+    
+# }
+
+# access_token - eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDdlNjA5OGRhYWQyNzYwNWYzNTgwYyIsImlhdCI6MTcyNTQyNTE2MX0.TxOnzsOVFQY6BiK2HcdXTQUVYroXjqLnKmjUxUQaoKQ
+
+# POST http://localhost:3000/signup 
+#  Content-Type: application/json
+
+#  {
+#     "fullname": "siam",
+#     "email": "siam@gmail.com",
+#    "password": "Aa@123456"
+    
+#  }
+
+# GET http://localhost:3000/get-upload-url 
+# POST http://localhost:3000/create-blog
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDdlNjA5OGRhYWQyNzYwNWYzNTgwYyIsImlhdCI6MTcyNTQyNTE2MX0.TxOnzsOVFQY6BiK2HcdXTQUVYroXjqLnKmjUxUQaoKQ
+
+# {
+#     "title": "this is a test blog",
+#     "banner": "https://example.com",
+#     "des": "this is a short blog",
+#     "content": {
+#         "blocks": [1,2]
+#     },
+#     "tags": ["tags1", "tags2"]
+# }
+
+# GET http://localhost:3000/latest-blogs
+# GET http://localhost:3000/trending-blogs
+# POST http://localhost:3000/search-blogs
+# Content-Type: application/json
+
+# {
+#     "tag": "test"
+# }
+
+# POST http://localhost:3000/search-user
+#  Content-Type: application/json
+
+#  {
+#     "query": "has"
+#  }
+# POST http://localhost:3000/get-profile
+#  Content-Type: application/json
+
+#  {
+#     "username": "siam"
+#  }
+POST http://localhost:3000/get-blog
+ Content-Type: application/json
+
+ {
+    "blog_id": "How-Tiny-Neural-Networks-Represent-Basic-Functions0nYc3so00rS6uSHvgGhRF"
+ }
