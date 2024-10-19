@@ -13,7 +13,7 @@ import User from './Schema/User.js';
 import Blog from './Schema/Blog.js';
 import Notification from './Schema/Notification.js';
 import Comment from './Schema/Comment.js';
-import serviceAccountKey from "./react-js-blog-website-98b73-firebase-adminsdk-gn41n-25bba9d1a4.json" assert { type: 'json' };
+import path from 'path';
 
 // Check for required environment variables
 const requiredEnvVars = [
@@ -33,9 +33,13 @@ requiredEnvVars.forEach((varName) => {
 
 // Initialize Firebase Admin
 try {
+  const serviceAccountKeyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  const serviceAccount = JSON.parse(fs.readFileSync(path.resolve(serviceAccountKeyPath), 'utf8'));
+
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountKey)
+    credential: admin.credential.cert(serviceAccount)
   });
+
   console.log('Firebase Admin Initialized');
 } catch (error) {
   console.error('Error initializing Firebase Admin:', error);
@@ -1127,9 +1131,6 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
     return res.status(500).json({ error: err.message })
   })
 
-
- 
-
 })
 
 
@@ -1390,85 +1391,87 @@ server.post('/admin-all-blogs', (req, res) => {
 
 })
 
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// const verifyToken = (req, res, next) => {
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).json({ error: 'No access token' });
-  }
+//   if (!token) {
+//     return res.status(401).json({ error: 'No access token' });
+//   }
 
-  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token is invalid' });
-    }
+//   jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+//     if (err) {
+//       return res.status(403).json({ error: 'Token is invalid' });
+//     }
 
-    console.log('Decoded user from token:', user); // Check if `admin` is present here
-    req.user = user;
-    next();
-  });
-};
+//     console.log('Decoded user from token:', user); // Check if `admin` is present here
+//     req.user = user;
+//     next();
+//   });
+// };
 
 
-// Middleware to check if the user is an admin
-const isAdmin = (req, res, next) => {
-  const user = req.user;
+// // Middleware to check if the user is an admin
+// const isAdmin = (req, res, next) => {
+//   const user = req.user;
 
-  // Ensure the `admin` field is a boolean
-  console.log('Admin check:', user.admin === true, typeof user.admin); // Log the type for debugging
+//   // Ensure the `admin` field is a boolean
+//   console.log('Admin check:', user.admin === true, typeof user.admin); // Log the type for debugging
 
-  if (user && user.admin === true) {
-    console.log('Admin access granted');
-    next();
-  } else {
-    console.log('Admin access denied');
-    return res.status(403).json({ error: 'Access denied. Admins only.' });
-  }
-};
+//   if (user && user.admin === true) {
+//     console.log('Admin access granted');
+//     next();
+//   } else {
+//     console.log('Admin access denied');
+//     return res.status(403).json({ error: 'Access denied. Admins only.' });
+//   }
+// };
 
 
 
 // Route to delete a blog (admin-only access)
-server.post("/admin-delete-blog", verifyToken, isAdmin, (req, res) => {
-  console.log("Request body:", req.body); // Log the request body
-  const { blog_id } = req.body;
-  
 
-  console.log("Blog ID:", blog_id); // Log to see what blog_id is received
+server.delete('/blog/:blogId', async (req, res) => {
+  try {
+    const { blogId } = req.params; 
 
-  if (!blog_id) {
-    return res.status(400).json({ error: "Blog ID is required" });
+    // Check if blogId is a valid ObjectId, if not, search using blog_id field
+    let deletedBlog;
+    if (mongoose.Types.ObjectId.isValid(blogId)) {
+      deletedBlog = await Blog.findByIdAndDelete(blogId); // Search by _id (MongoDB ObjectId)
+    } else {
+      deletedBlog = await Blog.findOneAndDelete({ blog_id: blogId }); // Search by custom blog_id field
+    }
+
+    if (!deletedBlog) {
+      return res.status(404).send({ message: 'Blog not found' });
+    }
+
+    res.status(200).send({ message: 'Blog deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting blog:', error);
+    res.status(500).send({ message: 'Failed to delete blog' });
   }
+});
 
-  Blog.findOneAndDelete({ _id: blog_id })
-    .then((blog) => {
-      if (!blog) {
-        return res.status(404).json({ error: 'Blog not found' });
-      }
+server.put('/blog/approve/:blogId', async (req, res) => {
+  try {
+    const { blogId } = req.params;  // Extract blog ID from the URL
+    const updatedBlog = await Blog.findOneAndUpdate(
+      { blog_id: blogId },  // Use blog_id for the query
+      { is_approved: true }, // Set `is_approved` to true
+      { new: true } // Return the updated document
+    );
 
-      // Delete related notifications and comments
-      Notification.deleteMany({ blog: blog._id })
-        .then(() => console.log('Notifications deleted'))
-        .catch(err => console.error('Error deleting notifications:', err));
+    if (!updatedBlog) {
+      return res.status(404).send({ message: 'Blog not found' });
+    }
 
-      Comment.deleteMany({ blog: blog._id })
-        .then(() => console.log('Comments deleted'))
-        .catch(err => console.error('Error deleting comments:', err));
-
-      // Update the user by removing the blog from their list
-      User.findOneAndUpdate(
-        { _id: blog.author },
-        { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } }
-      )
-        .then(() => console.log('User blog count updated'))
-        .catch(err => console.error('Error updating user:', err));
-
-      return res.status(200).json({ status: 'Blog deleted successfully' });
-    })
-    .catch((err) => {
-      console.error('Error deleting blog:', err);
-      return res.status(500).json({ error: err.message });
-    });
+    res.status(200).send({ message: 'Blog approved successfully', blog: updatedBlog });
+  } catch (error) {
+    console.error('Error approving blog:', error);
+    res.status(500).send({ message: 'Failed to approve blog' });
+  }
 });
 
 
