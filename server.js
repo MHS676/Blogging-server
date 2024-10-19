@@ -31,6 +31,7 @@ requiredEnvVars.forEach((varName) => {
   }
 });
 
+
 // Initialize Firebase Admin
 try {
   const serviceAccountKeyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
