@@ -1256,6 +1256,30 @@ server.get('/all-users', async (req, res) => {
   }
 });
 
+// Server-side: Update user role
+server.patch('/users/:id/role', async (req, res) => {
+  try {
+    const { id } = req.params; // Get user ID from the request parameters
+    const { role } = req.body; // Get the new role from the request body
+
+    // Update the user's role in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { 'personal_info.role': role },
+      { new: true } // Return the updated user document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ message: 'Failed to update user role' });
+  }
+});
+
 
 // DELETE route to handle user deletion
 server.delete('/users/:userId', async (req, res) => {
@@ -1475,6 +1499,19 @@ server.put('/blog/approve/:blogId', async (req, res) => {
   }
 });
 
+// Route to fetch admin information where admin is true
+server.get('/admin-information', async (req, res) => {
+  try {
+    const admin = await User.findOne({ 'admin': true });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    res.status(200).json(admin);
+  } catch (error) {
+    console.error('Error fetching admin information:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 // Start the server
